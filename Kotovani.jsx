@@ -3,7 +3,7 @@ var vstup = prompt("Zadej kóty (zleva). První údaj 0=bez vynášecích čar, 
 if (vstup != null || vstup != '') {
 	vstup = vstup.replace(/^\s+|\s+$/gm,'');
   	var doc = app.activeDocument;
-	var pt2mm = 0.35277777777778;
+	var pt2mm = 25.4 / 72;
   	var i;
 	var text = "";
 	var dimCol =doc.swatches.getByName('Dim').color;
