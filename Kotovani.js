@@ -24,11 +24,29 @@ if (sel.length > 0) {
 
 if (points.length > 1) {
 	sorted = points.sort(function (a, b) { return a - b; });
+	var dist = 0;
 	for (i = 1; i < sorted.length; i++) {
-		dims.push(sorted[i] - sorted[i - 1]);
+		dist = sorted[i] - sorted[i - 1];
+		if (dist != 0)
+			dims.push(dist);
 	}
 }
 
+try { var color = doc.swatches.getByName('Dim') }
+
+catch(e) {
+
+    var newColor = new CMYKColor();
+        newColor.cyan    = 0;
+        newColor.magenta = 100;
+        newColor.yellow  = 0;
+        newColor.black   = 0;
+
+    var newSpot = doc.spots.add();
+        newSpot.name      = 'Dim';
+        newSpot.colorType = ColorModel.SPOT;
+        newSpot.color     = newColor;
+}
 
 var vstup = prompt("Zadej kóty (zleva). První údaj 0=bez vynášecích čar, 1=vč. vynášecích čar. Druhý údaj je velikost šipky.", "1 " + Math.floor((0.8 * Math.max(h, w) * pt2mm + 0.5) / 100) + " " + dims.join(' '));
 
@@ -41,8 +59,9 @@ if (vstup != null) {    //  || vstup != ''
 	vstup = vstup.replace(/,/g, '.');
 	var koty = vstup.split(' ');
 	var kota = 0;
-	var x0 = doc.artboards[0].artboardRect[0] + sorted[0] / pt2mm;
-	var y0 = doc.artboards[0].artboardRect[1];
+	if(sorted.length == 0) sorted.push(0);
+	var x0 = x + sorted[0] / pt2mm;  // doc.artboards[0].artboardRect[0] + sorted[0] / pt2mm;
+	var y0 = y; // doc.artboards[0].artboardRect[1];
 	var cnt = 0;
 	var line;
 	var group;
@@ -50,7 +69,7 @@ if (vstup != null) {    //  || vstup != ''
 	var vynaseciCary = parseFloat(koty[0]);
 	var velikostSipky = parseFloat(koty[1]) / pt2mm;
 	var yKota = 0;
-	doc.defaultStrokeWidth = Math.min(1.5 / pt2mm, velikostSipky / 10);
+	var strokeWidth = Math.min(1.5 / pt2mm, velikostSipky / 10);
 	group = doc.activeLayer.groupItems.add();
 	for (i = 2; i < koty.length; i++) {
 		kota = parseFloat(koty[i])/pt2mm;
@@ -59,7 +78,8 @@ if (vstup != null) {    //  || vstup != ''
 			line = doc.activeLayer.pathItems.add();
 			line.stroked = true;
 			line.strokeColor = dimCol;
-			line.strokeOverprint = true;
+			line.strokeWidth = strokeWidth;
+			line.strokeOverprint = false;
 			line.filled = false;
 			line.setEntirePath(Array(Array(x0 + cnt, yKota), Array(x0 + cnt + kota, yKota)));
 			line.move(group, ElementPlacement.PLACEATEND);
@@ -67,7 +87,8 @@ if (vstup != null) {    //  || vstup != ''
 			line = doc.activeLayer.pathItems.add();
 			line.stroked = true;
 			line.strokeColor = dimCol;
-			line.strokeOverprint = true;
+			line.strokeWidth = strokeWidth;
+			line.strokeOverprint = false;
 			line.filled = false;
 			line.setEntirePath(Array(Array(x0 + cnt + velikostSipky, yKota-velikostSipky/2), 
 						Array(x0 + cnt , yKota), 
@@ -77,7 +98,8 @@ if (vstup != null) {    //  || vstup != ''
 			line = doc.activeLayer.pathItems.add();
 			line.stroked = true;
 			line.strokeColor = dimCol;
-			line.strokeOverprint = true;
+			line.strokeWidth = strokeWidth;
+			line.strokeOverprint = false;
 			line.filled = false;
 			line.setEntirePath(Array(Array(x0 + cnt + kota-velikostSipky, yKota-velikostSipky/2), 
 						Array(x0 + cnt + kota, yKota), 
@@ -88,7 +110,8 @@ if (vstup != null) {    //  || vstup != ''
 				line = doc.activeLayer.pathItems.add();
 				line.stroked = true;
 				line.strokeColor = dimCol;
-				line.strokeOverprint = true;
+				line.strokeWidth = strokeWidth;
+				line.strokeOverprint = false;
 				line.filled = false;
 				if (i == 2) {
 					line.setEntirePath(Array(Array(x0 + cnt, yKota + velikostSipky), Array(x0 + cnt , yKota - velikostSipky*2)));
@@ -96,7 +119,8 @@ if (vstup != null) {    //  || vstup != ''
 					line = doc.activeLayer.pathItems.add();
 					line.stroked = true;
 					line.strokeColor = dimCol;
-					line.strokeOverprint = true;
+					line.strokeWidth = strokeWidth;
+					line.strokeOverprint = false;
 					line.filled = false;
 				}	
 				line.setEntirePath(Array(Array(x0 + cnt + kota, yKota + velikostSipky), Array(x0 + cnt +kota, yKota - velikostSipky*2)));
@@ -109,7 +133,7 @@ if (vstup != null) {    //  || vstup != ''
 			kotaText.textRange.characterAttributes.filled = true;
 			kotaText.textRange.characterAttributes.stroked = false;
 			kotaText.textRange.characterAttributes.fillColor = dimCol;
-			kotaText.textRange.characterAttributes.overprintFill = true;
+			kotaText.textRange.characterAttributes.overprintFill = false;
 			kotaText.textRange.paragraphAttributes.justification = Justification.CENTER;
 			kotaText.move(group, ElementPlacement.PLACEATEND);
 
